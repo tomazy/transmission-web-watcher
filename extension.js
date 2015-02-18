@@ -2,10 +2,22 @@
 (function(){
   var notified = {};
   var map = [].map
-  var log = console.log.bind(console, '[bt-watcher]');
-
+  var log = console.log.bind(console, '[transmission-watcher]');
   var options = {
+    checkFreqInSeconds: 10,
     prefix: "Downloaded: "
+  }
+
+  function not(f){
+    return function(){
+      return !f.apply(null, arguments);
+    }
+  }
+
+  function and(f1, f2){
+    return function(){
+      return f1.apply(null, arguments) && f2.apply(null, arguments);
+    }
   }
 
   function say(text){
@@ -16,38 +28,33 @@
   function torrents(){
     var torrentEls = document.querySelectorAll('.torrent');
     return map.call(torrentEls, function(el){
-      var torrent = {
-        name: el.querySelector('.torrent_name').innerText,
+      return {
+        name:     el.querySelector('.torrent_name').innerText,
         progress: parseInt(el.querySelector('.torrent_progress_bar').style.width)
       }
-      return torrent;
     });
   }
 
-  function finsished(torrents){
-    return torrents.filter(function(t){
-      return t.progress > 99;
-    });
+  function isFinished(torrent){
+    return torrent.progress > 99;
   }
 
-  function notNotified(torrents){
-    return torrents.filter(function(t){
-      return !notified[t.name];
-    });
+  function isNotified(torrent){
+    return notified[torrent.name];
   }
 
-  function notify(n){
-    say(options.prefix + n);
-    notified[n] = true;
+  function notifyTorrentFinsihed(torrent){
+    say(options.prefix + torrent.name);
+    notified[torrent.name] = true;
   }
 
   function check(){
-    notNotified(finsished(torrents())).forEach(function(t){
-      notify(t.name);
-    })
+    torrents().
+      filter(and(isFinished, not(isNotified))).
+      forEach(notifyTorrentFinsihed)
   }
 
-  setInterval(check, 10 * 1000);
+  setInterval(check, options.checkFreqInSeconds * 1000);
 
-  log('watch installed');
+  log('running');
 })();

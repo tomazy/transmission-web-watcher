@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Transmission Watcher",
+  "name": "Transmission Web Interface watcher",
   "version": "0.0.0.1",
-  "description": "Watch Transmition Web for finished downloads and notify about it by speach api",
+  "description": "Watch Transmission Web for finished downloads and notify about them by speech synthesis api",
   "content_scripts": [
     {
       "matches": [
